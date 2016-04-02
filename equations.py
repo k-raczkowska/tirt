@@ -1,6 +1,8 @@
 # coding=utf-8
+
+
 class abcd():
-    def __init__(s, mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G):
+    def __init__(s, mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, if_cool, if_heat, i):
         s.mk = mk
         s.Tk = Tk
         s.Tp = Tp
@@ -19,36 +21,55 @@ class abcd():
         s.R = R
         s.G = G
         s.I = 5  # todo dodac do gui
+        s.if_cool = if_cool
+        s.if_heat = if_heat
+        s.i = i
+        s.result = s.f(s.Tp, if_cool, if_heat)
 
-    def suma(s, a):
-        return a
+    def suma(s, a, i):
+        return a * i
 
-    def f(s, x, y):
-        Y = s.q_cool() + s.q_heat() + s.q_int() + s.q_wall() + s.q_win()
+    def f(s, y, if_cool, if_heat):
+        Y =  s.q_wall(y) + s.q_int() # + s.q_win() + s.q_int()
+        if if_cool:
+            Y += s.q_cool(y)
+            if s.Tk < s.Tp - Y:
+                Y = s.Tk - s.Tp
+        if if_heat:
+            Y = s.q_heat()
+            if s.Tp + Y >= 90:
+                Y = 90 - s.Tp
+        s.result = Y
         return Y
 
-    def q_cool(self):  # klimatyzacja
-        return self.mk * (self.Tk - self.Tp) / (self.V * self.d)
+    def q_cool(self, y):  # klimatyzacja
+        res = self.mk * (self.Tk - y) / (self.V * self.d)
+        return self.mk * (self.Tk - y) / (self.V * self.d)
 
     def q_heat(self):  # grzejnik
-        return self.Qg / (self.V * self.d)
+        return (self.Qg - 1500) * 3600 / (self.V * self.d * 1000)
 
     def q_int(self):  # osoby w pomieszczeniu
         return self.Np / (self.V * self.d * self.c)
 
-    def q_wall(s): # cieplo przeplywajace przez sciany
-        return s.k * (s.To - s.Tp) / (s.V * s.d * s.c) * (s.suma(s.Ai / s.hi) + s.suma(s.Al / s.hl))
+    def q_wall(s, y):  # cieplo przeplywajace przez sciany
+        s1 = s.suma(s.Ai / s.hi, s.i)
+        s2 = s.suma(s.Al / s.hl, 4 - s.i)
+        res = s.k * (s.To - y) / (s.V * s.d * s.c) * (s.suma(s.Ai / s.hi, s.i) + s.suma(s.Al / s.hl, 4 - s.i))
+        return s.k * (s.To - y) / (s.V * s.d * s.c) * (s.suma(s.Ai / s.hi, s.i) + s.suma(s.Al / s.hl, 4 - s.i))
 
-    def q_win(self):
-        return self.suma(self.G * self.Ai * self.I) / (self.V * self.d * self.c)
+    def q_win(self):  # okna
+        return self.suma(self.G * self.Ai * self.I, 2) / (self.V * self.d * self.c)
 
     # rungego kutty 4 rzędu
-    def solve(s, x, y):  # początkowe wartości x i y
+    def solve(s, if_cool, if_heat):  # początkowe wartości x i y
         h = 0.01
 
-        k1 = h * s.f(x, y)
-        k2 = h * s.f(x + h / 2, y + 1 / 2 * k1 * h)
-        k3 = h * s.f(x + h / 2, y + 1 / 2 * k2 * h)
-        k4 = h * s.f(x + h, y + k3 * h)
+        k1 = h * s.f(s.Tp, if_cool, if_heat)
+        x = s.Tp + 1 / 2 * k1 * h
+        k2 = h * s.f(s.Tp + 1 / 2 * k1 * h, if_cool, if_heat)
+        k3 = h * s.f(s.Tp + 1 / 2 * k2 * h, if_cool, if_heat)
+        k4 = h * s.f(s.Tp + k3 * h, if_cool, if_heat)
         dy = 1 / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
-        s.Tp = s.Tp + dy
+        s.Tp += dy
+        return s.Tp

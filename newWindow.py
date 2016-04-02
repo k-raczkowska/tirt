@@ -14,29 +14,29 @@ class newWind(QtGui.QDialog):
 
     def __init__(self, solver, parent=None):
         super(newWind, self).__init__(parent)
+        self.text = QtGui.QTextBrowser()
+        self.btn = QtGui.QPushButton("Stop")
+        self.timer = QTimer(self)
         self.solver = solver
 
     def setupUi(self):
         grid = QtGui.QGridLayout()
-        self.text = QtGui.QTextBrowser()
         grid.addWidget(self.text, 0, 0)
-        self.btn = QtGui.QPushButton("Stop")
         grid.addWidget(self.btn, 1, 0)
 
-        self.timer = QTimer(self)
         self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.doSolving)
         self.connect(self.btn, QtCore.SIGNAL("clicked()"), self.stop)
         # self.btn.clicked.connect(self.solveEquation)
         self.start()
 
-        print("hi")
         self.setLayout(grid)
         self.setWindowTitle("Temperatura")
         self.resize(600, 600)
 
     def doSolving(self):
-        self.solver.solve(self.x, self.y)
-        self.text.append("\n" + str(self.solver.Tk))
+        x = self.solver.solve(self.solver.if_cool, self.solver.if_heat)
+        self.text.append("\n" + str(round(x + self.solver.result, 1)))
+        self.solver.Tp = self.solver.result + x
 
     def stop(self):
         self.timer.stop()

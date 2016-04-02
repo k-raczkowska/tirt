@@ -16,6 +16,10 @@ class Window(QtGui.QWidget):
     def __init__(self, parent=None):
         super(Window, self).__init__(parent)
 
+        self.zew = QtGui.QSpinBox()
+        self.klimatyzacja = QtGui.QGroupBox("Klimatyzacja")
+        self.grzejnik = QtGui.QGroupBox("Grzejnik")
+        self.czy_grzejnik = self.grzejnik.isChecked()
         grid = QtGui.QGridLayout()
         grid.addWidget(self.createFirstExclusiveGroup(), 0, 0)
         grid.addWidget(self.createSecondExclusiveGroup(), 1, 0)
@@ -23,12 +27,13 @@ class Window(QtGui.QWidget):
         grid.addWidget(self.createPushButtonGroup(), 1, 1)
         grid.addWidget(self.createSciany(), 2, 0)
         grid.addWidget(self.createOkna(), 2, 1)
+        grid.addWidget(self.create_persons(), 3, 0)
         grid.addWidget(self.solve(), 3, 1)
 
         self.setLayout(grid)
 
         self.setWindowTitle("Modelowanie temperatury pomieszczenia")
-        self.resize(700, 520)
+        self.resize(850, 620)
 
     def createFirstExclusiveGroup(self):
         groupBox = QtGui.QGroupBox(_fromUtf8("Temperatury"))
@@ -58,9 +63,8 @@ class Window(QtGui.QWidget):
         return groupBox
 
     def createSecondExclusiveGroup(self):
-        groupBox = QtGui.QGroupBox("Klimatyzacja")
-        groupBox.setCheckable(True)
-        groupBox.setChecked(False)
+        self.klimatyzacja.setCheckable(True)
+        self.klimatyzacja.setChecked(False)
 
         l1 = QtGui.QLabel(_fromUtf8("Temperatura powietrza klimatyzacji (°C)"))
         self.temp_pow = QtGui.QDoubleSpinBox()
@@ -70,33 +74,38 @@ class Window(QtGui.QWidget):
         self.przeplyw.setValue(5.0)
         self.przeplyw.setMaximum(1000)
 
-
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(l1)
         vbox.addWidget(self.temp_pow)
         vbox.addWidget(l2)
         vbox.addWidget(self.przeplyw)
         vbox.addStretch(1)
-        groupBox.setLayout(vbox)
+        self.klimatyzacja.setLayout(vbox)
 
-        return groupBox
+        return self.klimatyzacja
 
     def createNonExclusiveGroup(self):
-        groupBox = QtGui.QGroupBox("Grzejnik")
-        groupBox.setCheckable(True)
-        groupBox.setChecked(False)
+        self.grzejnik.setCheckable(True)
+        self.grzejnik.setChecked(False)
 
         l1 = QtGui.QLabel(_fromUtf8("Wydajność cieplna grzejnika"))
         self.wydajnosc = QtGui.QDoubleSpinBox()
         self.wydajnosc.setValue(5.0)
+        self.wydajnosc.setMaximum(2000)
+
+        l2 = QtGui.QLabel(_fromUtf8("Maksymalna temperatura"))
+        self.max_temp = QtGui.QDoubleSpinBox()
+        self.max_temp.setValue(20)
 
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(l1)
         vbox.addWidget(self.wydajnosc)
+        vbox.addWidget(l2)
+        vbox.addWidget(self.max_temp)
         vbox.addStretch(1)
-        groupBox.setLayout(vbox)
+        self.grzejnik.setLayout(vbox)
 
-        return groupBox
+        return self.grzejnik
 
     def createPushButtonGroup(self):
         groupBox = QtGui.QGroupBox("Charakterystyka pomieszczenia")
@@ -127,7 +136,6 @@ class Window(QtGui.QWidget):
         groupBox = QtGui.QGroupBox(_fromUtf8("Ściany"))
 
         l1 = QtGui.QLabel(_fromUtf8("Liczba ścian zewnętrznych"))
-        self.zew = QtGui.QSpinBox()
         self.zew.setValue(4)
         l2 = QtGui.QLabel(_fromUtf8("Grubość ścian zewnętrznych"))
         self.gr_zew = QtGui.QDoubleSpinBox()
@@ -155,7 +163,7 @@ class Window(QtGui.QWidget):
         scrollArea.setWidget(groupBox)
         scrollArea.setWidgetResizable(True)
 
-        self.dodaj_o()
+        # self.dodaj_o()
         dodaj_okno = QtGui.QPushButton("Dodaj okno")
 
         self.vbox1.addWidget(dodaj_okno)
@@ -178,9 +186,9 @@ class Window(QtGui.QWidget):
 
     def dodaj_o(self):
         hbox = QtGui.QHBoxLayout()
-        l1 = QtGui.QLabel("Położenie:")
-        l2 = QtGui.QLabel("Szerokość:")
-        l3 = QtGui.QLabel("Wysokość:")
+        l1 = QtGui.QLabel(_fromUtf8("Położenie:"))
+        l2 = QtGui.QLabel(_fromUtf8("Szerokość:"))
+        l3 = QtGui.QLabel(_fromUtf8("Wysokość:"))
         szer = QtGui.QDoubleSpinBox()
         wys = QtGui.QDoubleSpinBox()
 
@@ -196,32 +204,48 @@ class Window(QtGui.QWidget):
         self.vbox1.addWidget(groupBox2)
         return hbox
 
+    def create_persons(self):
+        groupBox = QtGui.QGroupBox(_fromUtf8("Osoby"))
+
+        l = QtGui.QLabel(_fromUtf8("Liczba osób"))
+        self.liczba_osob = QtGui.QSpinBox()
+
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget(l)
+        vbox.addWidget(self.liczba_osob)
+        groupBox.setLayout(vbox)
+        self.vbox1.addWidget(groupBox)
+
+        return groupBox
+
     def solve(self):
         buttonSolve = QtGui.QPushButton(_fromUtf8("Rozwiąż równanie"))
         buttonSolve.clicked.connect(self.solveEquation)
         return buttonSolve
 
     def solveEquation(self):
-        mk = self.przeplyw.value() / 3600  # podawany w m3/h, przeliczenie na sekundy
+        # mk = self.przeplyw.value() / 3600  # podawany w m3/h, przeliczenie na sekundy
+        mk = self.przeplyw.value()
         Tk = self.temp_pow.value()
         Tp = self.temp_pom.value()
         V = self.wys.value() * self.szer.value() * self.dlug.value()
         d = 1.29  # kg/m^3
-        c = 1013  # hPa
+        c = 1000
         Qg = self.wydajnosc.value()
-        Np = 5  # osób w pokoju
+        Np = self.liczba_osob.value()  # osób w pokoju
         k = 0.5  # W/m*stopień celsjusza
         hi = self.gr_zew.value()
         hl = self.gr_wew.value()
         To = self.temp_in.value()
-        Ai = 0  # TODO dodac parametry
-        Al = 0  # TODO dodac
+        Ai = 16  # TODO dodac parametry
+        Al = 16  # TODO dodac
         Tow = self.temp_out.value()
         R = 0.96  # W/m*st celsjusza
         G = 0  # TODO dodac
+        i = self.zew.value()
         print(V)
-        solver = abcd(mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G)
-        print(solver.f(1, 1))
+        solver = abcd(mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, self.klimatyzacja.isChecked(), self.grzejnik.isChecked(), i)
+        print(solver.f(Tp, self.klimatyzacja.isChecked(), self.grzejnik.isChecked()))
 
         u = newWind(solver)
         u.setupUi()
