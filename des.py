@@ -2,6 +2,7 @@
 from PyQt4 import QtCore, QtGui
 from equations import abcd
 from newWindow import newWind
+from windows import okno
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -20,6 +21,7 @@ class Window(QtGui.QWidget):
         self.klimatyzacja = QtGui.QGroupBox("Klimatyzacja")
         self.grzejnik = QtGui.QGroupBox("Grzejnik")
         self.czy_grzejnik = self.grzejnik.isChecked()
+        self.lista_wys_okien = []
         grid = QtGui.QGridLayout()
         grid.addWidget(self.createFirstExclusiveGroup(), 0, 0)
         grid.addWidget(self.createSecondExclusiveGroup(), 1, 0)
@@ -33,7 +35,7 @@ class Window(QtGui.QWidget):
         self.setLayout(grid)
 
         self.setWindowTitle("Modelowanie temperatury pomieszczenia")
-        self.resize(850, 620)
+        self.resize(950, 620)
 
     def createFirstExclusiveGroup(self):
         groupBox = QtGui.QGroupBox(_fromUtf8("Temperatury"))
@@ -68,11 +70,12 @@ class Window(QtGui.QWidget):
 
         l1 = QtGui.QLabel(_fromUtf8("Temperatura powietrza klimatyzacji (°C)"))
         self.temp_pow = QtGui.QDoubleSpinBox()
-        self.temp_pow.setValue(10)
+        self.temp_pow.setValue(20)
+        self.temp_pow.setRange(0, 30)
         l2 = QtGui.QLabel(_fromUtf8("Przepływ powietrza (m3/h)"))
         self.przeplyw = QtGui.QDoubleSpinBox()
-        self.przeplyw.setValue(5.0)
-        self.przeplyw.setMaximum(1000)
+        self.przeplyw.setValue(300.0)
+        self.przeplyw.setRange(100, 1000)
 
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(l1)
@@ -90,18 +93,18 @@ class Window(QtGui.QWidget):
 
         l1 = QtGui.QLabel(_fromUtf8("Wydajność cieplna grzejnika"))
         self.wydajnosc = QtGui.QDoubleSpinBox()
-        self.wydajnosc.setValue(5.0)
-        self.wydajnosc.setMaximum(2000)
+        self.wydajnosc.setValue(1000.0)
+        self.wydajnosc.setRange(200, 2000)
 
-        l2 = QtGui.QLabel(_fromUtf8("Maksymalna temperatura"))
-        self.max_temp = QtGui.QDoubleSpinBox()
-        self.max_temp.setValue(20)
+        # l2 = QtGui.QLabel(_fromUtf8("Maksymalna temperatura"))
+        # self.max_temp = QtGui.QDoubleSpinBox()
+        # self.max_temp.setValue(20)
 
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(l1)
         vbox.addWidget(self.wydajnosc)
-        vbox.addWidget(l2)
-        vbox.addWidget(self.max_temp)
+        # vbox.addWidget(l2)
+        # vbox.addWidget(self.max_temp)
         vbox.addStretch(1)
         self.grzejnik.setLayout(vbox)
 
@@ -112,7 +115,7 @@ class Window(QtGui.QWidget):
 
         l1 = QtGui.QLabel(_fromUtf8("Wysokość"))
         self.wys = QtGui.QDoubleSpinBox()
-        self.wys.setValue(4)  # jesli metry
+        self.wys.setValue(3)  # jesli metry
         l2 = QtGui.QLabel(_fromUtf8("Szerokość"))
         self.szer = QtGui.QDoubleSpinBox()
         self.szer.setValue(5)
@@ -136,14 +139,16 @@ class Window(QtGui.QWidget):
         groupBox = QtGui.QGroupBox(_fromUtf8("Ściany"))
 
         l1 = QtGui.QLabel(_fromUtf8("Liczba ścian zewnętrznych"))
-        self.zew.setValue(4)
+        self.zew.setValue(1)
         l2 = QtGui.QLabel(_fromUtf8("Grubość ścian zewnętrznych"))
         self.gr_zew = QtGui.QDoubleSpinBox()
-        self.gr_zew.setValue(4.0)
+        self.gr_zew.setValue(1.0)
+        self.gr_zew.setRange(0.1, 2)
         # TODO jaka jednostka
         l3 = QtGui.QLabel(_fromUtf8("Grubość ścian wewnętrznych"))
         self.gr_wew = QtGui.QDoubleSpinBox()
-        self.gr_wew.setValue(5.0)
+        self.gr_wew.setValue(0.5)
+        self.gr_wew.setRange(0.1, 2)
         # TODO jaka jednostka
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(l1)
@@ -174,30 +179,38 @@ class Window(QtGui.QWidget):
 
     def createLista(self):
         lista = QtGui.QComboBox()
-        lista.addItem(_fromUtf8("Północ"))
-        lista.addItem(_fromUtf8("Północny wschód"))
-        lista.addItem(_fromUtf8("Wschód"))
-        lista.addItem(_fromUtf8("Południowy wschód"))
-        lista.addItem(_fromUtf8("Południe"))
-        lista.addItem(_fromUtf8("Południowy zachód"))
-        lista.addItem(_fromUtf8("Zachód"))
-        lista.addItem(_fromUtf8("Połnocny zachód"))
+        lista.addItem(_fromUtf8("N"))
+        lista.addItem(_fromUtf8("N-E"))
+        lista.addItem(_fromUtf8("E"))
+        lista.addItem(_fromUtf8("S-E"))
+        lista.addItem(_fromUtf8("S"))
+        lista.addItem(_fromUtf8("S-W"))
+        lista.addItem(_fromUtf8("W"))
+        lista.addItem(_fromUtf8("N-W"))
         return lista
 
     def dodaj_o(self):
         hbox = QtGui.QHBoxLayout()
-        l1 = QtGui.QLabel(_fromUtf8("Położenie:"))
+        l1 = QtGui.QLabel(_fromUtf8("Natężenie promieniowania słonecznego:"))
         l2 = QtGui.QLabel(_fromUtf8("Szerokość:"))
         l3 = QtGui.QLabel(_fromUtf8("Wysokość:"))
+        nat = QtGui.QDoubleSpinBox()
+        nat.setValue(500)
+        nat.setRange(0, 2000)
         szer = QtGui.QDoubleSpinBox()
         wys = QtGui.QDoubleSpinBox()
 
         hbox.addWidget(l1)
-        hbox.addWidget(self.createLista())
+        # lista = self.createLista()
+        # hbox.addWidget(lista)
+        hbox.addWidget(nat)
         hbox.addWidget(l2)
         hbox.addWidget(szer)
         hbox.addWidget(l3)
         hbox.addWidget(wys)
+        o = okno(wys, szer, nat)
+        self.lista_wys_okien.append(o)
+        print(self.lista_wys_okien.__len__())
 
         groupBox2 = QtGui.QGroupBox()
         groupBox2.setLayout(hbox)
@@ -225,7 +238,7 @@ class Window(QtGui.QWidget):
 
     def solveEquation(self):
         # mk = self.przeplyw.value() / 3600  # podawany w m3/h, przeliczenie na sekundy
-        mk = self.przeplyw.value()
+        mk = self.przeplyw.value() / 60
         Tk = self.temp_pow.value()
         Tp = self.temp_pom.value()
         V = self.wys.value() * self.szer.value() * self.dlug.value()
@@ -234,18 +247,20 @@ class Window(QtGui.QWidget):
         Qg = self.wydajnosc.value()
         Np = self.liczba_osob.value()  # osób w pokoju
         k = 0.5  # W/m*stopień celsjusza
-        hi = self.gr_zew.value()
-        hl = self.gr_wew.value()
+        hi = self.gr_zew.value() / 100
+        hl = self.gr_wew.value() / 100
         To = self.temp_in.value()
-        Ai = 16  # TODO dodac parametry
-        Al = 16  # TODO dodac
+        Ai = self.wys.value() * self.szer.value()  # TODO dodac parametry
+        Al = self.wys.value() * self.dlug.value()  # TODO dodac
         Tow = self.temp_out.value()
         R = 0.96  # W/m*st celsjusza
         G = 0  # TODO dodac
         i = self.zew.value()
+        okna = self.lista_wys_okien
         print(V)
-        solver = abcd(mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, self.klimatyzacja.isChecked(), self.grzejnik.isChecked(), i)
+        solver = abcd(mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, self.klimatyzacja.isChecked(), self.grzejnik.isChecked(), i, okna)
         print(solver.f(Tp, self.klimatyzacja.isChecked(), self.grzejnik.isChecked()))
+        print (solver.oknna)
 
         u = newWind(solver)
         u.setupUi()

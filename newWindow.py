@@ -35,8 +35,8 @@ class newWind(QtGui.QDialog):
 
     def doSolving(self):
         x = self.solver.solve(self.solver.if_cool, self.solver.if_heat)
-        self.text.append("\n" + str(round(x + self.solver.result, 1)))
-        self.solver.Tp = self.solver.result + x
+        self.text.append("\n" + str(round(self.solver.result, 3)))
+        self.solver.Tp = self.solver.result
 
     def stop(self):
         self.timer.stop()
