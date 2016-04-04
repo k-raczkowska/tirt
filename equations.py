@@ -65,7 +65,7 @@ class abcd():
         s1 = s.suma(s.Ai / s.hi, s.i)
         s2 = s.suma(s.Al / s.hl, 4 - s.i)
         res = s.k * (s.To - y) / (s.V * s.d * s.c) * (s.suma(s.Ai / s.hi, s.i) + s.suma(s.Al / s.hl, 4 - s.i))
-        res2 = s.k / (s.V * s.d * s.c) * (s.suma(s.Ai * (s.Tow - s.Tp) / s.hi, s.i) + s.suma(s.Al * (s.To - s.Tp) / s.hl, 4 - s.i))
+        res2 = s.k / (s.V * s.d * s.c / 3600) * (s.suma(s.Ai * (s.Tow - s.Tp) / s.hi, s.i) + s.suma(s.Al * (s.To - s.Tp) / s.hl, 4 - s.i))
         return res2
 
     def q_win(s, x):  # okna
