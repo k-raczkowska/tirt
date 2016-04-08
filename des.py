@@ -94,7 +94,14 @@ class Window(QtGui.QWidget):
         l1 = QtGui.QLabel(_fromUtf8("Wydajność cieplna grzejnika"))
         self.wydajnosc = QtGui.QDoubleSpinBox()
         self.wydajnosc.setValue(1000.0)
-        self.wydajnosc.setRange(200, 2000)
+        self.wydajnosc.setRange(0, 2000)
+
+        l2 = QtGui.QLabel(_fromUtf8("Temperatura ogrzewania"))
+        self.temperaturaG=QtGui.QComboBox()
+        for i in range (1,6):
+            self.temperaturaG.addItem(_fromUtf8(str(i)))
+
+        # self.temperaturaG.setValue(30)
 
         # l2 = QtGui.QLabel(_fromUtf8("Maksymalna temperatura"))
         # self.max_temp = QtGui.QDoubleSpinBox()
@@ -103,6 +110,8 @@ class Window(QtGui.QWidget):
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(l1)
         vbox.addWidget(self.wydajnosc)
+        vbox.addWidget(l2)
+        vbox.addWidget(self.temperaturaG)
         # vbox.addWidget(l2)
         # vbox.addWidget(self.max_temp)
         vbox.addStretch(1)
@@ -270,8 +279,9 @@ class Window(QtGui.QWidget):
         G = 0  # TODO dodac
         i = self.zew.value()
         okna = self.lista_wys_okien
+        TG=int(self.temperaturaG.currentText())
         print(V)
-        solver = abcd(mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, self.klimatyzacja.isChecked(), self.grzejnik.isChecked(), i, okna)
+        solver = abcd(mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, self.klimatyzacja.isChecked(), self.grzejnik.isChecked(), i, okna, TG)
         print(solver.f(Tp, self.klimatyzacja.isChecked(), self.grzejnik.isChecked()))
         print (solver.oknna)
 

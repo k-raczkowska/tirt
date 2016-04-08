@@ -8,7 +8,7 @@ except AttributeError:
         return s
 
 class abcd():
-    def __init__(s, mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, if_cool, if_heat, i, okna):
+    def __init__(s, mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, if_cool, if_heat, i, okna,TG):
         s.counter = 0
         s.mk = mk
         s.oknna = okna
@@ -32,7 +32,10 @@ class abcd():
         s.if_cool = if_cool
         s.if_heat = if_heat
         s.i = i
+        s.TG=11+(TG-1)*5 # temperatura od 11 zmieniajaca sie co 5
+        print(str(s.TG))
         s.result = s.f(s.Tp, if_cool, if_heat)
+
 
     def suma(s, a, i):
         return a * i
@@ -44,7 +47,7 @@ class abcd():
             if s.Tk > s.Tp - Y:
                 Y = s.Tk - s.Tp
         if if_heat:
-            Y += s.q_heat()
+            Y += s.q_heat(y)
             if s.Tp + Y >= 90:
                 Y = 90 - s.Tp
         Y += s.q_wall(y) + s.q_int() + s.q_win(s.oknna)
@@ -55,8 +58,8 @@ class abcd():
         res = self.mk * (self.Tk - y) / (self.V * self.d)
         return self.mk * (self.Tk - y) / (self.V * self.d)
 
-    def q_heat(self):  # grzejnik
-        return 0.4 * self.Qg * 3600 / (self.V * self.d * 1000)
+    def q_heat(self,y):  # grzejnik
+        return 0.4 * self.Qg * 3600*(self.TG-y) / (self.V * self.d * 1000)
 
     def q_int(self):  # osoby w pomieszczeniu
         return self.Np / (self.V * self.d * self.c)
@@ -73,9 +76,9 @@ class abcd():
         for okno in s.oknna:
             licznik_ulamka += 0.5 * okno.wysokosc.value() * okno.szerokosc.value() * okno.strona.value()
             wsp = okno.strona.value()
-            print okno.strona.value()
-            print okno.wysokosc.value()
-            print okno.szerokosc.value()
+            print (okno.strona.value())
+            print (okno.wysokosc.value())
+            print (okno.szerokosc.value())
             s.G = 0.5
             s.Ai = okno.wysokosc.value() * okno.szerokosc.value()
         return licznik_ulamka / (s.V * s.d * s.c)
