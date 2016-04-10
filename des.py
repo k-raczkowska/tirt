@@ -30,12 +30,19 @@ class Window(QtGui.QWidget):
         grid.addWidget(self.createSciany(), 2, 0)
         grid.addWidget(self.createOkna(), 1, 1)
         grid.addWidget(self.create_persons(), 3, 0)
-        grid.addWidget(self.solve(), 3, 1)
+        grid.addWidget(self.temperatureControl(), 3, 1)
+        grid.addWidget(self.solve(), 4, 1)
+
+        # self.temperaturaG..connect(self.update)
+
+
 
         self.setLayout(grid)
 
         self.setWindowTitle("Modelowanie temperatury pomieszczenia")
-        self.resize(950, 620)
+        self.resize(640, 620)
+
+
 
     def createFirstExclusiveGroup(self):
         groupBox = QtGui.QGroupBox(_fromUtf8("Temperatury"))
@@ -93,31 +100,70 @@ class Window(QtGui.QWidget):
 
         l1 = QtGui.QLabel(_fromUtf8("Wydajność cieplna grzejnika"))
         self.wydajnosc = QtGui.QDoubleSpinBox()
-        self.wydajnosc.setValue(1000.0)
+        self.wydajnosc.setValue(20.0)
         self.wydajnosc.setRange(0, 2000)
 
-        l2 = QtGui.QLabel(_fromUtf8("Temperatura ogrzewania"))
+
+
+        l2 = QtGui.QLabel(_fromUtf8("Temp. minim."))
+        self.temperaturaMin=QtGui.QDoubleSpinBox()
+        self.temperaturaMin.setValue(15)
+
+        l3 = QtGui.QLabel(_fromUtf8("Róznica temperatur"))
+        self.roznice=QtGui.QDoubleSpinBox()
+        self.roznice.setValue(5)
+
+        l4 = QtGui.QLabel(_fromUtf8("Liczba poziomów"))
+        self.poziomy=QtGui.QSpinBox()
+        self.poziomy.setValue(5)
+        self.poziom=5
+        self.poziomy.setMinimum(1)
+        self.poziomy.valueChanged.connect(self.modifyLevels)
+
+
+
+
+        grid=QtGui.QGridLayout()
+        grid.addWidget(l2,0,0)
+        grid.addWidget(self.temperaturaMin,1,0)
+        grid.addWidget(l3,0,1)
+        grid.addWidget(self.roznice,1,1)
+        grid.addWidget(l4,0,2)
+        grid.addWidget(self.poziomy,1,2)
+
+        l5 = QtGui.QLabel(_fromUtf8("Wybrany poziom"))
         self.temperaturaG=QtGui.QComboBox()
-        for i in range (1,6):
+
+        for i in range (1,int(self.poziomy.value())+1):
             self.temperaturaG.addItem(_fromUtf8(str(i)))
 
-        # self.temperaturaG.setValue(30)
-
-        # l2 = QtGui.QLabel(_fromUtf8("Maksymalna temperatura"))
-        # self.max_temp = QtGui.QDoubleSpinBox()
-        # self.max_temp.setValue(20)
 
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(l1)
         vbox.addWidget(self.wydajnosc)
-        vbox.addWidget(l2)
-        vbox.addWidget(self.temperaturaG)
+        vbox.addItem(grid)
         # vbox.addWidget(l2)
-        # vbox.addWidget(self.max_temp)
+        # vbox.addWidget(self.temperaturaMin)
+        # vbox.addWidget(l3)
+        # vbox.addWidget(poziomy)
+        # vbox.addWidget(l4)
+        # vbox.addWidget(self.roznice)
+        vbox.addWidget(l5)
+        vbox.addWidget(self.temperaturaG)
         vbox.addStretch(1)
         self.grzejnik.setLayout(vbox)
 
         return self.grzejnik
+
+    def modifyLevels(self):
+
+        if (self.poziomy.value()>self.poziom): #nowa wartosc jest wieksza od poprzedniej
+            self.temperaturaG.addItem(_fromUtf8(str(self.poziomy.value())))
+        else:
+            self.temperaturaG.removeItem(self.poziomy.value())
+        self.poziom=self.poziomy.value()
+
+
 
     def createPushButtonGroup(self):
         groupBox = QtGui.QGroupBox("Charakterystyka pomieszczenia")
@@ -212,7 +258,7 @@ class Window(QtGui.QWidget):
         return lista
 
     def dodaj_o(self):
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtGui.QGridLayout()
         l1 = QtGui.QLabel(_fromUtf8("Natężenie promieniowania słonecznego:"))
         l2 = QtGui.QLabel(_fromUtf8("Szerokość:"))
         l3 = QtGui.QLabel(_fromUtf8("Wysokość:"))
@@ -220,16 +266,18 @@ class Window(QtGui.QWidget):
         nat.setRange(0, 2000)
         nat.setValue(500)
         szer = QtGui.QDoubleSpinBox()
+        szer.setValue(0.5)
         wys = QtGui.QDoubleSpinBox()
+        wys.setValue(0.4)
 
-        hbox.addWidget(l1)
+        hbox.addWidget(l1,0,0)
         # lista = self.createLista()
         # hbox.addWidget(lista)
-        hbox.addWidget(nat)
-        hbox.addWidget(l2)
-        hbox.addWidget(szer)
-        hbox.addWidget(l3)
-        hbox.addWidget(wys)
+        hbox.addWidget(nat,1,0)
+        hbox.addWidget(l2,0,1)
+        hbox.addWidget(szer,1,1)
+        hbox.addWidget(l3,0,2)
+        hbox.addWidget(wys,1,2)
         o = okno(wys, szer, nat)
         self.lista_wys_okien.append(o)
         print(self.lista_wys_okien.__len__())
@@ -256,7 +304,27 @@ class Window(QtGui.QWidget):
     def solve(self):
         buttonSolve = QtGui.QPushButton(_fromUtf8("Rozwiąż równanie"))
         buttonSolve.clicked.connect(self.solveEquation)
+
+
+
         return buttonSolve
+
+    def temperatureControl(self):
+        groupBox =QtGui.QGroupBox(_fromUtf8("Sterowanie"))
+        groupBox.setCheckable(True)
+        groupBox.setChecked(False)
+        l=QtGui.QLabel(_fromUtf8("Zadana temperatura"))
+        self.temperaturaWymagana = QtGui.QSpinBox()
+        self.temperaturaWymagana.setValue(20)
+
+
+        layout=QtGui.QHBoxLayout()
+        layout.addWidget(l)
+        layout.addWidget(self.temperaturaWymagana)
+
+
+        groupBox.setLayout(layout)
+        return groupBox
 
     def solveEquation(self):
         # mk = self.przeplyw.value() / 3600  # podawany w m3/h, przeliczenie na sekundy
@@ -265,7 +333,7 @@ class Window(QtGui.QWidget):
         Tp = self.temp_pom.value()
         V = self.wys.value() * self.szer.value() * self.dlug.value()
         d = 1.29  # kg/m^3
-        c = 1000000
+        c = 100000
         Qg = self.wydajnosc.value()
         Np = self.liczba_osob.value()  # osób w pokoju
         k = 0.5  # W/m*stopień celsjusza
@@ -276,19 +344,48 @@ class Window(QtGui.QWidget):
         Al = (2 - self.sciany_zew_dlug.value()) * self.dlug.value() * self.wys.value() + (2 - self.sciany_zew_szer.value()) * self.szer.value() * self.wys.value()
         Tow = self.temp_out.value()
         R = 0.96  # W/m*st celsjusza
-        G = 0  # TODO dodac
+        G = 0.8  # TODO dodac
         i = self.zew.value()
         okna = self.lista_wys_okien
-        TG=int(self.temperaturaG.currentText())
+        TG = self.temperaturaMin.value()+(int(self.temperaturaG.currentText())-1)*self.roznice.value()
         print(V)
-        solver = abcd(mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, self.klimatyzacja.isChecked(), self.grzejnik.isChecked(), i, okna, TG)
-        print(solver.f(Tp, self.klimatyzacja.isChecked(), self.grzejnik.isChecked()))
-        print (solver.oknna)
+        self.solver = abcd(mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, self.klimatyzacja.isChecked(), self.grzejnik.isChecked(), i, okna, TG)
+        print(self.solver.f(Tp, self.klimatyzacja.isChecked(), self.grzejnik.isChecked()))
+        print (self.solver.oknna)
 
-        u = newWind(solver)
-        u.setupUi()
-        u.show()
-        u.exec_()
+        # Wartości które mogą się zmieniać
+        self.temp_in.valueChanged.connect(lambda: self.update(self.temp_in))
+        self.temp_out.valueChanged.connect(lambda: self.update(self.temp_out))
+        self.liczba_osob.valueChanged.connect(lambda: self.update(self.liczba_osob))
+        self.przeplyw.valueChanged.connect(lambda: self.update(self.przeplyw))
+        ##################################################
+
+        self.u = newWind(self.solver)
+        self.u.setupUi()
+        self.u.show()
+        self.u.exec_()
+
+
+    def update(self,widgetChanged):
+        if (widgetChanged==self.temp_in):
+            self.solver.To=widgetChanged.value()
+            self.u.text.append("\n zmiana Temp poza pomieszcz na wartość: "+str(widgetChanged.value()))
+
+        if (widgetChanged==self.temp_out):
+            self.solver.Tow=widgetChanged.value()
+            self.u.text.append("\n zmiana Temp na zewnątrz na wartość: "+str(widgetChanged.value()))
+
+        if (widgetChanged==self.liczba_osob):
+            self.solver.Np=widgetChanged.value()
+            self.u.text.append("\n zmiana liczba osób na wartość: "+str(widgetChanged.value()))
+
+        if (widgetChanged==self.przeplyw):
+            self.solver.mk=widgetChanged.value()
+            self.u.text.append("\n zmiana przepływ powietrza na wartość: "+str(widgetChanged.value()))
+
+
+        print(widgetChanged)
+
 
 
 if __name__ == '__main__':

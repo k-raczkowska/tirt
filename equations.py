@@ -28,12 +28,12 @@ class abcd():
         s.Tow = Tow
         s.R = R
         s.G = G
-        s.I = 5  # todo dodac do gui
         s.if_cool = if_cool
         s.if_heat = if_heat
         s.i = i
-        s.TG=11+(TG-1)*5 # temperatura od 11 zmieniajaca sie co 5
-        print(str(s.TG))
+        s.TG=TG
+        print(str(TG)+" to jest TG")
+
         s.result = s.f(s.Tp, if_cool, if_heat)
 
 
@@ -48,8 +48,8 @@ class abcd():
                 Y = s.Tk - s.Tp
         if if_heat:
             Y += s.q_heat(y)
-            if s.Tp + Y >= 90:
-                Y = 90 - s.Tp
+            # if s.Tp + Y >= 90:
+            #     Y = 90 - s.Tp
         Y += s.q_wall(y) + s.q_int() + s.q_win(s.oknna)
         s.result = Y + s.Tp
         return Y
@@ -74,14 +74,17 @@ class abcd():
     def q_win(s, x):  # okna
         licznik_ulamka = 0
         for okno in s.oknna:
-            licznik_ulamka += 0.5 * okno.wysokosc.value() * okno.szerokosc.value() * okno.strona.value()
+            licznik_ulamka += s.G * okno.wysokosc.value() * okno.szerokosc.value() * okno.strona.value()
             wsp = okno.strona.value()
             print (okno.strona.value())
             print (okno.wysokosc.value())
             print (okno.szerokosc.value())
-            s.G = 0.5
             s.Ai = okno.wysokosc.value() * okno.szerokosc.value()
-        return licznik_ulamka / (s.V * s.d * s.c)
+            print(licznik_ulamka )
+            print(s.Ai)
+            print("##")
+
+        return licznik_ulamka / (s.V * s.d * s.c/1000)
 
     # rungego kutty 4 rzędu
     def solve(s, if_cool, if_heat):  # początkowe wartości x i y
@@ -96,3 +99,6 @@ class abcd():
         s.Tp += dy
         s.counter += 1
         return s.Tp
+
+
+
