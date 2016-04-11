@@ -59,7 +59,7 @@ class abcd():
         return self.mk * (self.Tk - y) / (self.V * self.d)
 
     def q_heat(self,y):  # grzejnik
-        return 0.4 * self.Qg * 3600*(self.TG-y) / (self.V * self.d * 1000)
+        return 0.4 * self.Qg * 3600*max(self.TG-y,0) / (self.V * self.d * 1000)
 
     def q_int(self):  # osoby w pomieszczeniu
         return self.Np / (self.V * self.d * self.c)

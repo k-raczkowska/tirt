@@ -98,18 +98,18 @@ class Window(QtGui.QWidget):
         self.grzejnik.setCheckable(True)
         self.grzejnik.setChecked(False)
 
-        l1 = QtGui.QLabel(_fromUtf8("Wydajność cieplna grzejnika"))
+        l1 = QtGui.QLabel(_fromUtf8("Wydajność cieplna grzejnika (W)"))
         self.wydajnosc = QtGui.QDoubleSpinBox()
-        self.wydajnosc.setValue(20.0)
         self.wydajnosc.setRange(0, 2000)
+        self.wydajnosc.setValue(200.0)
 
 
 
-        l2 = QtGui.QLabel(_fromUtf8("Temp. minim."))
+        l2 = QtGui.QLabel(_fromUtf8("Temp. minim. (°C)"))
         self.temperaturaMin=QtGui.QDoubleSpinBox()
         self.temperaturaMin.setValue(15)
 
-        l3 = QtGui.QLabel(_fromUtf8("Róznica temperatur"))
+        l3 = QtGui.QLabel(_fromUtf8("Róznica temperatur (°C)"))
         self.roznice=QtGui.QDoubleSpinBox()
         self.roznice.setValue(5)
 
@@ -132,10 +132,10 @@ class Window(QtGui.QWidget):
         grid.addWidget(self.poziomy,1,2)
 
         l5 = QtGui.QLabel(_fromUtf8("Wybrany poziom"))
-        self.temperaturaG=QtGui.QComboBox()
+        self.poziomGrzania=QtGui.QComboBox()
 
         for i in range (1,int(self.poziomy.value())+1):
-            self.temperaturaG.addItem(_fromUtf8(str(i)))
+            self.poziomGrzania.addItem(_fromUtf8(str(i)))
 
 
         vbox = QtGui.QVBoxLayout()
@@ -149,7 +149,7 @@ class Window(QtGui.QWidget):
         # vbox.addWidget(l4)
         # vbox.addWidget(self.roznice)
         vbox.addWidget(l5)
-        vbox.addWidget(self.temperaturaG)
+        vbox.addWidget(self.poziomGrzania)
         vbox.addStretch(1)
         self.grzejnik.setLayout(vbox)
 
@@ -158,9 +158,9 @@ class Window(QtGui.QWidget):
     def modifyLevels(self):
 
         if (self.poziomy.value()>self.poziom): #nowa wartosc jest wieksza od poprzedniej
-            self.temperaturaG.addItem(_fromUtf8(str(self.poziomy.value())))
+            self.poziomGrzania.addItem(_fromUtf8(str(self.poziomy.value())))
         else:
-            self.temperaturaG.removeItem(self.poziomy.value())
+            self.poziomGrzania.removeItem(self.poziomy.value())
         self.poziom=self.poziomy.value()
 
 
@@ -334,7 +334,7 @@ class Window(QtGui.QWidget):
         V = self.wys.value() * self.szer.value() * self.dlug.value()
         d = 1.29  # kg/m^3
         c = 100000
-        Qg = self.wydajnosc.value()
+        Qg = self.wydajnosc.value()/10
         Np = self.liczba_osob.value()  # osób w pokoju
         k = 0.5  # W/m*stopień celsjusza
         hi = self.gr_zew.value()
@@ -347,7 +347,7 @@ class Window(QtGui.QWidget):
         G = 0.8  # TODO dodac
         i = self.zew.value()
         okna = self.lista_wys_okien
-        TG = self.temperaturaMin.value()+(int(self.temperaturaG.currentText())-1)*self.roznice.value()
+        TG = self.wyliczTemperatureGrzejnika(int(self.poziomGrzania.currentText()))
         print(V)
         self.solver = abcd(mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, self.klimatyzacja.isChecked(), self.grzejnik.isChecked(), i, okna, TG)
         print(self.solver.f(Tp, self.klimatyzacja.isChecked(), self.grzejnik.isChecked()))
@@ -358,6 +358,9 @@ class Window(QtGui.QWidget):
         self.temp_out.valueChanged.connect(lambda: self.update(self.temp_out))
         self.liczba_osob.valueChanged.connect(lambda: self.update(self.liczba_osob))
         self.przeplyw.valueChanged.connect(lambda: self.update(self.przeplyw))
+        self.poziomGrzania.activated.connect(lambda: self.update(self.poziomGrzania))
+        self.grzejnik.toggled.connect(lambda: self.update(self.grzejnik))
+        self.klimatyzacja.toggled.connect(lambda:self.update(self.klimatyzacja))
         ##################################################
 
         self.u = newWind(self.solver)
@@ -365,24 +368,47 @@ class Window(QtGui.QWidget):
         self.u.show()
         self.u.exec_()
 
+    def wyliczTemperatureGrzejnika(self,poziom):
+        return self.temperaturaMin.value()+(poziom-1)*self.roznice.value()
 
     def update(self,widgetChanged):
         if (widgetChanged==self.temp_in):
             self.solver.To=widgetChanged.value()
-            self.u.text.append("\n zmiana Temp poza pomieszcz na wartość: "+str(widgetChanged.value()))
+            self.u.text.append("\nZmiana: temp poza pomieszczeniem ma teraz wartość: "+str(widgetChanged.value()))
 
         if (widgetChanged==self.temp_out):
             self.solver.Tow=widgetChanged.value()
-            self.u.text.append("\n zmiana Temp na zewnątrz na wartość: "+str(widgetChanged.value()))
+            self.u.text.append("\nZmiana: temp na zewnątrz budynku ma teraz wartość: "+str(widgetChanged.value()))
 
         if (widgetChanged==self.liczba_osob):
             self.solver.Np=widgetChanged.value()
-            self.u.text.append("\n zmiana liczba osób na wartość: "+str(widgetChanged.value()))
+            self.u.text.append("\nZmiana: liczba osób ma teraz  wartość: "+str(widgetChanged.value()))
 
         if (widgetChanged==self.przeplyw):
             self.solver.mk=widgetChanged.value()
-            self.u.text.append("\n zmiana przepływ powietrza na wartość: "+str(widgetChanged.value()))
+            self.u.text.append("\nZmiana: przepływ powietrza na wartość: "+str(widgetChanged.value()))
 
+        if (widgetChanged==self.poziomGrzania): #zmiena poziomu grzejnika
+            self.solver.TG=self.wyliczTemperatureGrzejnika(int(widgetChanged.currentText()))
+            self.u.text.append("\nZmiana: grzejnik na wartość: "+str(widgetChanged.currentText()))
+
+        if (widgetChanged==self.grzejnik): #wlaczony/wylaczony grzejnik
+            self.solver.if_heat=widgetChanged.isChecked()
+
+            if (widgetChanged.isChecked()):
+                state="wlaczony"
+            else:
+                state="wylaczony"
+            self.u.text.append("\nZmiana: Grzejnik został "+state)
+
+        if (widgetChanged==self.klimatyzacja): #wlaczony/wylaczony grzejnik
+            self.solver.if_cool=widgetChanged.isChecked()
+
+            if (widgetChanged.isChecked()):
+                state="wlaczona"
+            else:
+                state="wylaczona"
+            self.u.text.append("\nZmiana: Klimatyzacja została "+state)
 
         print(widgetChanged)
 
