@@ -14,6 +14,12 @@ except AttributeError:
 class Window(QtGui.QWidget):
     vbox1 = QtGui.QVBoxLayout()
 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
     def __init__(self, parent=None):
         super(Window, self).__init__(parent)
 
@@ -29,13 +35,20 @@ class Window(QtGui.QWidget):
         grid.addWidget(self.createPushButtonGroup(), 1, 0)
         grid.addWidget(self.createSciany(), 2, 0)
         grid.addWidget(self.createOkna(), 1, 1)
-        grid.addWidget(self.create_persons(), 3, 0)
-        grid.addWidget(self.solve(), 3, 1)
+        grid.addWidget(self.create_persons(), 0, 2)
+        grid.addWidget(self.temperatureControl(), 1, 2)
+        grid.addWidget(self.solve(), 2, 2)
+
+        # self.temperaturaG..connect(self.update)
+
+
 
         self.setLayout(grid)
 
         self.setWindowTitle("Modelowanie temperatury pomieszczenia")
-        self.resize(950, 620)
+        self.resize(640, 620)
+
+
 
     def createFirstExclusiveGroup(self):
         groupBox = QtGui.QGroupBox(_fromUtf8("Temperatury"))
@@ -68,21 +81,43 @@ class Window(QtGui.QWidget):
         self.klimatyzacja.setCheckable(True)
         self.klimatyzacja.setChecked(False)
 
+        grid=QtGui.QGridLayout()
+        lTemp1=QtGui.QLabel("Temperatura minimalna")
+        lTemp2=QtGui.QLabel("Temperatura maksymalna")
+
+        self.klimTempMin=QtGui.QDoubleSpinBox()
+        self.klimTempMin.setValue(4)
+        self.klimTempMin.valueChanged.connect(self.setMin)
+        self.klimTempMaks=QtGui.QDoubleSpinBox()
+        self.klimTempMaks.setValue(32)
+        self.klimTempMaks.valueChanged.connect(self.setMax)
+
+        grid.addWidget(lTemp1,0,0)
+        grid.addWidget(lTemp2,0,1)
+        grid.addWidget(self.klimTempMin,1,0)
+        grid.addWidget(self.klimTempMaks,1,1)
+
         l1 = QtGui.QLabel(_fromUtf8("Temperatura powietrza klimatyzacji (°C)"))
         self.temp_pow = QtGui.QDoubleSpinBox()
         self.temp_pow.setValue(20)
-        self.temp_pow.setRange(0, 30)
+        self.temp_pow.setRange(self.klimTempMin.value(), self.klimTempMaks.value())
+
         l2 = QtGui.QLabel(_fromUtf8("Przepływ powietrza (m3/h)"))
         self.przeplyw = QtGui.QDoubleSpinBox()
-        self.przeplyw.setValue(300.0)
-        self.przeplyw.setRange(100, 1000)
+        self.przeplyw.setRange(100, 3000)
+        self.przeplyw.setValue(1000.0)
 
         vbox = QtGui.QVBoxLayout()
-        vbox.addWidget(l1)
-        vbox.addWidget(self.temp_pow)
+        vbox.addItem(grid)
         vbox.addWidget(l2)
         vbox.addWidget(self.przeplyw)
         vbox.addStretch(1)
+
+        vbox.addWidget(l1)
+        vbox.addWidget(self.temp_pow)
+
+
+
         self.klimatyzacja.setLayout(vbox)
 
         return self.klimatyzacja
@@ -91,24 +126,68 @@ class Window(QtGui.QWidget):
         self.grzejnik.setCheckable(True)
         self.grzejnik.setChecked(False)
 
-        l1 = QtGui.QLabel(_fromUtf8("Wydajność cieplna grzejnika"))
+        l1 = QtGui.QLabel(_fromUtf8("Wydajność cieplna grzejnika (W)"))
         self.wydajnosc = QtGui.QDoubleSpinBox()
-        self.wydajnosc.setValue(1000.0)
-        self.wydajnosc.setRange(200, 2000)
+        self.wydajnosc.setRange(0, 2000)
+        self.wydajnosc.setValue(2000.0)
 
-        # l2 = QtGui.QLabel(_fromUtf8("Maksymalna temperatura"))
-        # self.max_temp = QtGui.QDoubleSpinBox()
-        # self.max_temp.setValue(20)
+
+
+        # l2 = QtGui.QLabel(_fromUtf8("Temp. minim. (°C)"))
+        # self.temperaturaMin=QtGui.QDoubleSpinBox()
+        # self.temperaturaMin.setValue(15)
+        #
+        # l3 = QtGui.QLabel(_fromUtf8("Róznica temperatur (°C)"))
+        # self.roznice=QtGui.QDoubleSpinBox()
+        # self.roznice.setValue(5)
+        #
+        # l4 = QtGui.QLabel(_fromUtf8("Liczba poziomów"))
+        # self.poziomy=QtGui.QSpinBox()
+        # self.poziomy.setValue(5)
+        # self.poziom=5
+        # self.poziomy.setMinimum(1)
+        # self.poziomy.valueChanged.connect(self.modifyLevels)
+
+
+
+
+        # grid=QtGui.QGridLayout()
+        # grid.addWidget(l2,0,0)
+        # grid.addWidget(self.temperaturaMin,1,0)
+        # grid.addWidget(l3,0,1)
+        # grid.addWidget(self.roznice,1,1)
+        # grid.addWidget(l4,0,2)
+        # grid.addWidget(self.poziomy,1,2)
+
+        # l5 = QtGui.QLabel(_fromUtf8("Wybrany poziom"))
+        # self.poziomGrzania=QtGui.QComboBox()
+
+
+        # for i in range (1,int(self.poziomy.value())+1):
+        #     self.poziomGrzania.addItem(_fromUtf8(str(i)))
+
+
 
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(l1)
         vbox.addWidget(self.wydajnosc)
-        # vbox.addWidget(l2)
-        # vbox.addWidget(self.max_temp)
+        # vbox.addItem(grid)
+        # vbox.addWidget(l5)
+        # vbox.addWidget(self.poziomGrzania)
         vbox.addStretch(1)
         self.grzejnik.setLayout(vbox)
 
         return self.grzejnik
+
+    def modifyLevels(self):
+
+        if (self.poziomy.value()>self.poziom): #nowa wartosc jest wieksza od poprzedniej
+            self.poziomGrzania.addItem(_fromUtf8(str(self.poziomy.value())))
+        else:
+            self.poziomGrzania.removeItem(self.poziomy.value())
+        self.poziom=self.poziomy.value()
+
+
 
     def createPushButtonGroup(self):
         groupBox = QtGui.QGroupBox("Charakterystyka pomieszczenia")
@@ -157,12 +236,12 @@ class Window(QtGui.QWidget):
         self.gr_zew = QtGui.QDoubleSpinBox()
         self.gr_zew.setValue(0.4)
         self.gr_zew.setRange(0.1, 2)
-        # TODO jaka jednostka
+
         l3 = QtGui.QLabel(_fromUtf8("Grubość ścian wewnętrznych"))
         self.gr_wew = QtGui.QDoubleSpinBox()
         self.gr_wew.setValue(0.15)
         self.gr_wew.setRange(0.1, 2)
-        # TODO jaka jednostka
+
         vbox = QtGui.QVBoxLayout()
         # vbox.addWidget(l1)
         # vbox.addWidget(self.zew)
@@ -203,7 +282,7 @@ class Window(QtGui.QWidget):
         return lista
 
     def dodaj_o(self):
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtGui.QGridLayout()
         l1 = QtGui.QLabel(_fromUtf8("Natężenie promieniowania słonecznego:"))
         l2 = QtGui.QLabel(_fromUtf8("Szerokość:"))
         l3 = QtGui.QLabel(_fromUtf8("Wysokość:"))
@@ -211,19 +290,21 @@ class Window(QtGui.QWidget):
         nat.setRange(0, 2000)
         nat.setValue(500)
         szer = QtGui.QDoubleSpinBox()
+        szer.setValue(0.5)
         wys = QtGui.QDoubleSpinBox()
+        wys.setValue(0.4)
 
-        hbox.addWidget(l1)
+        hbox.addWidget(l1,0,0)
         # lista = self.createLista()
         # hbox.addWidget(lista)
-        hbox.addWidget(nat)
-        hbox.addWidget(l2)
-        hbox.addWidget(szer)
-        hbox.addWidget(l3)
-        hbox.addWidget(wys)
+        hbox.addWidget(nat,1,0)
+        hbox.addWidget(l2,0,1)
+        hbox.addWidget(szer,1,1)
+        hbox.addWidget(l3,0,2)
+        hbox.addWidget(wys,1,2)
         o = okno(wys, szer, nat)
         self.lista_wys_okien.append(o)
-        print(self.lista_wys_okien.__len__())
+        #print(self.lista_wys_okien.__len__())
 
         groupBox2 = QtGui.QGroupBox()
         groupBox2.setLayout(hbox)
@@ -247,38 +328,189 @@ class Window(QtGui.QWidget):
     def solve(self):
         buttonSolve = QtGui.QPushButton(_fromUtf8("Rozwiąż równanie"))
         buttonSolve.clicked.connect(self.solveEquation)
+
+
+
         return buttonSolve
+
+    def temperatureControl(self):
+
+        self.sterowanie =QtGui.QGroupBox(_fromUtf8("Sterowanie"))
+        self.sterowanie.setCheckable(True)
+        self.sterowanie.setChecked(False)
+        l=QtGui.QLabel(_fromUtf8("Temperatura na dzień"))
+        self.temperatura_dzienna = QtGui.QSpinBox()
+        self.temperatura_dzienna.setValue(20)
+
+        l2=QtGui.QLabel(_fromUtf8("Temperatura na noc"))
+        self.temperatura_nocna=QtGui.QSpinBox()
+        self.temperatura_nocna.setValue(18)
+
+        l31=QtGui.QLabel(_fromUtf8("Od"))
+        l31.setAlignment(QtCore.Qt.AlignCenter)
+        self.czas_dzien_od=QtGui.QSpinBox()
+        self.czas_dzien_od.setValue(5)
+        l32=QtGui.QLabel(_fromUtf8("Do"))
+        l32.setAlignment(QtCore.Qt.AlignCenter)
+        self.czas_dzien_do=QtGui.QSpinBox()
+        self.czas_dzien_do.setValue(18)
+
+        l41=QtGui.QLabel(_fromUtf8("Od"))
+        l41.setAlignment(QtCore.Qt.AlignCenter)
+        self.czas_noc_od=QtGui.QSpinBox()
+        self.czas_noc_od.setValue(18)
+        l42=QtGui.QLabel(_fromUtf8("Do"))
+        l42.setAlignment(QtCore.Qt.AlignCenter)
+        self.czas_noc_do=QtGui.QSpinBox()
+        self.czas_noc_do.setValue(5)
+
+        layout=QtGui.QHBoxLayout()
+        layout.addWidget(l)
+        layout.addWidget(self.temperatura_dzienna)
+
+        lay2=QtGui.QHBoxLayout()
+        lay2.addWidget(l2)
+        lay2.addWidget(self.temperatura_nocna)
+
+        lay3=QtGui.QHBoxLayout()
+        lay3.addWidget(l31)
+        lay3.addWidget(self.czas_dzien_od)
+        lay3.addWidget(l32)
+        lay3.addWidget(self.czas_dzien_do)
+
+        lay4=QtGui.QHBoxLayout()
+        lay4.addWidget(l41)
+        lay4.addWidget(self.czas_noc_od)
+        lay4.addWidget(l42)
+        lay4.addWidget(self.czas_noc_do)
+
+        laySuma=QtGui.QVBoxLayout()
+        laySuma.addItem(layout)
+        laySuma.addItem(lay3)
+        laySuma.addItem(lay2)
+        laySuma.addItem(lay4)
+
+        self.czas_dzien_od.valueChanged.connect(self.v2)
+        self.czas_dzien_do.valueChanged.connect(self.v1)
+
+        self.sterowanie.setLayout(laySuma)
+        return self.sterowanie
+
+    def v1(self):
+        self.czas_noc_od.setValue(self.czas_dzien_do.value())
+    def v2(self):
+        self.czas_noc_do.setValue(self.czas_dzien_od.value())
 
     def solveEquation(self):
         # mk = self.przeplyw.value() / 3600  # podawany w m3/h, przeliczenie na sekundy
-        mk = self.przeplyw.value() / 3600
+        mk = self.przeplyw.value()
         Tk = self.temp_pow.value()
         Tp = self.temp_pom.value()
         V = self.wys.value() * self.szer.value() * self.dlug.value()
         d = 1.29  # kg/m^3
-        c = 1000000
+        c = 1000 #ciepło suchego powietrza 1<->1,006 kJ/kg*K
         Qg = self.wydajnosc.value()
         Np = self.liczba_osob.value()  # osób w pokoju
         k = 0.5  # W/m*stopień celsjusza
         hi = self.gr_zew.value()
         hl = self.gr_wew.value()
         To = self.temp_in.value()
+
         Ai = self.sciany_zew_dlug.value() * self.dlug.value() * self.wys.value() + self.sciany_zew_szer.value() * self.szer.value() * self.wys.value()
         Al = (2 - self.sciany_zew_dlug.value()) * self.dlug.value() * self.wys.value() + (2 - self.sciany_zew_szer.value()) * self.szer.value() * self.wys.value()
         Tow = self.temp_out.value()
         R = 0.96  # W/m*st celsjusza
-        G = 0  # TODO dodac
+        G = 0.8  # TODO dodac
         i = self.zew.value()
         okna = self.lista_wys_okien
-        print(V)
-        solver = abcd(mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, self.klimatyzacja.isChecked(), self.grzejnik.isChecked(), i, okna)
-        print(solver.f(Tp, self.klimatyzacja.isChecked(), self.grzejnik.isChecked()))
-        print (solver.oknna)
+        TG = 0#self.wyliczTemperatureGrzejnika(int(self.poziomGrzania.currentText()))
+        #print(V)
+        self.solver = abcd(mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, self.klimatyzacja.isChecked(), self.grzejnik.isChecked(), i, okna, TG)
+        #print(self.solver.f(Tp, self.klimatyzacja.isChecked(), self.grzejnik.isChecked()))
+        #print (self.solver.oknna)
 
-        u = newWind(solver)
-        u.setupUi()
-        u.show()
-        u.exec_()
+
+
+        # Wartości które mogą się zmieniać
+        # self.temp_in.valueChanged.connect(lambda: self.update(self.temp_in))
+        # self.temp_out.valueChanged.connect(lambda: self.update(self.temp_out))
+        # self.liczba_osob.valueChanged.connect(lambda: self.update(self.liczba_osob))
+        # self.przeplyw.valueChanged.connect(lambda: self.update(self.przeplyw))
+        # self.poziomGrzania.activated.connect(lambda: self.update(self.poziomGrzania))
+        # self.grzejnik.toggled.connect(lambda: self.update(self.grzejnik))
+        # self.klimatyzacja.toggled.connect(lambda:self.update(self.klimatyzacja))
+        ##################################################
+
+        self.u = newWind(self.solver,self)
+        if (self.sterowanie.isChecked()):
+            self.u.setTempWymagana(self.temperatura_dzienna.value())
+            #print(self.temperaturaWymagana.value())
+
+        self.u.setupUi()
+        self.u.show()
+        self.u.exec_()
+
+    def wyliczTemperatureGrzejnika(self,poziom):
+        return self.temperaturaMin.value()+(poziom-1)*self.roznice.value()
+
+    def update(self,widgetChanged,value):
+        print("update")
+        if (widgetChanged==self.temp_in):
+            self.solver.To=widgetChanged.value()
+            self.u.text.append("\nZmiana: temp poza pomieszczeniem ma teraz wartość: "+str(widgetChanged.value()))
+
+        if (widgetChanged==self.temp_out):
+            self.solver.Tow=widgetChanged.value()
+            self.u.text.append("\nZmiana: temp na zewnątrz budynku ma teraz wartość: "+str(widgetChanged.value()))
+
+        if (widgetChanged==self.liczba_osob):
+            self.solver.Np=widgetChanged.value()
+            self.u.text.append("\nZmiana: liczba osób ma teraz  wartość: "+str(widgetChanged.value()))
+
+        if (widgetChanged==self.przeplyw):
+            self.solver.mk=widgetChanged.value()
+            self.u.text.append("\nZmiana: przepływu powietrza na wartość: "+str(widgetChanged.value()))
+
+        # if (widgetChanged==self.poziomGrzania): #zmiena poziomu grzejnika
+        #     self.solver.TG=self.wyliczTemperatureGrzejnika(int(widgetChanged.currentText()))
+        #     self.u.text.append("\nZmiana: grzejnik ustawiony na poziom: "+str(value))
+
+        if (widgetChanged==self.grzejnik): #wlaczony/wylaczony grzejnik
+            widgetChanged.setChecked(value)
+            self.solver.if_heat=value
+            print(self.solver.if_heat)
+
+            if (value==True):
+                state="wlaczony"
+            else:
+                state="wylaczony"
+
+            self.u.text.append("\nZmiana: Grzejnik został "+state)
+        if (widgetChanged == self.temp_pow):
+            widgetChanged.setValue(value)
+            self.solver.Tk=value
+            self.u.text.append("\nZmiana: temperatury klimatyzacji na wartość: "+str(value))
+
+        if (widgetChanged==self.klimatyzacja): #wlaczony/wylaczony grzejnik
+            widgetChanged.setChecked(value)
+            self.solver.if_cool=value
+
+
+            if (value==True):
+                state="wlaczona"
+            else:
+                state="wylaczona"
+
+            self.u.text.append("\nZmiana: Klimatyzacja została "+state)
+
+        #print(widgetChanged)
+    def setMin(self,value):
+        self.temp_pow.setMinimum(value)
+    def setMax(self,value):
+        self.temp_pow.setMaximum(value)
+
+
+
 
 
 if __name__ == '__main__':
@@ -287,4 +519,5 @@ if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     clock = Window()
     clock.show()
+    clock.center()
     sys.exit(app.exec_())
