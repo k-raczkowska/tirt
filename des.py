@@ -72,7 +72,7 @@ class Window(QtGui.QWidget):
         self.temp_pow = QtGui.QDoubleSpinBox()
         self.temp_pow.setValue(20)
         self.temp_pow.setRange(0, 30)
-        l2 = QtGui.QLabel(_fromUtf8("Przepływ powietrza (m3/h)"))
+        l2 = QtGui.QLabel(_fromUtf8("Przepływ powietrza (kg/h)"))
         self.przeplyw = QtGui.QDoubleSpinBox()
         self.przeplyw.setValue(300.0)
         self.przeplyw.setRange(100, 1000)
@@ -91,7 +91,7 @@ class Window(QtGui.QWidget):
         self.grzejnik.setCheckable(True)
         self.grzejnik.setChecked(False)
 
-        l1 = QtGui.QLabel(_fromUtf8("Wydajność cieplna grzejnika"))
+        l1 = QtGui.QLabel(_fromUtf8("Wydajność cieplna grzejnika (W)"))
         self.wydajnosc = QtGui.QDoubleSpinBox()
         self.wydajnosc.setValue(1000.0)
         self.wydajnosc.setRange(200, 2000)
@@ -113,18 +113,18 @@ class Window(QtGui.QWidget):
     def createPushButtonGroup(self):
         groupBox = QtGui.QGroupBox("Charakterystyka pomieszczenia")
 
-        l1 = QtGui.QLabel(_fromUtf8("Wysokość"))
+        l1 = QtGui.QLabel(_fromUtf8("Wysokość (m)"))
         self.wys = QtGui.QDoubleSpinBox()
         self.wys.setValue(3)  # jesli metry
         l2 = QtGui.QLabel(_fromUtf8("Szerokość"))
-        self.szer = QtGui.QDoubleSpinBox()
+        self.szer = QtGui.QSpinBox()
         self.szer.setValue(5)
         l4 = QtGui.QLabel(_fromUtf8("Liczba ścian zewnętrznych"))
         self.sciany_zew_szer = QtGui.QDoubleSpinBox()
         self.sciany_zew_szer.setRange(0, 2)
         self.sciany_zew_szer.setValue(0)
-        l3 = QtGui.QLabel(_fromUtf8("Długość"))
-        self.dlug = QtGui.QDoubleSpinBox()
+        l3 = QtGui.QLabel(_fromUtf8("Długość (m)"))
+        self.dlug = QtGui.QSpinBox()
         self.dlug.setValue(5)
         l5 = QtGui.QLabel(_fromUtf8("Liczba ścian zewnętrznych"))
         self.sciany_zew_dlug = QtGui.QDoubleSpinBox()
@@ -153,12 +153,12 @@ class Window(QtGui.QWidget):
 
         # l1 = QtGui.QLabel(_fromUtf8("Liczba ścian zewnętrznych"))
         # self.zew.setValue(1)
-        l2 = QtGui.QLabel(_fromUtf8("Grubość ścian zewnętrznych"))
+        l2 = QtGui.QLabel(_fromUtf8("Grubość ścian zewnętrznych (m)"))
         self.gr_zew = QtGui.QDoubleSpinBox()
         self.gr_zew.setValue(0.4)
         self.gr_zew.setRange(0.1, 2)
         # TODO jaka jednostka
-        l3 = QtGui.QLabel(_fromUtf8("Grubość ścian wewnętrznych"))
+        l3 = QtGui.QLabel(_fromUtf8("Grubość ścian wewnętrznych (m)"))
         self.gr_wew = QtGui.QDoubleSpinBox()
         self.gr_wew.setValue(0.15)
         self.gr_wew.setRange(0.1, 2)
@@ -204,9 +204,9 @@ class Window(QtGui.QWidget):
 
     def dodaj_o(self):
         hbox = QtGui.QHBoxLayout()
-        l1 = QtGui.QLabel(_fromUtf8("Natężenie promieniowania słonecznego:"))
-        l2 = QtGui.QLabel(_fromUtf8("Szerokość:"))
-        l3 = QtGui.QLabel(_fromUtf8("Wysokość:"))
+        l1 = QtGui.QLabel(_fromUtf8("Natężenie promieniowania słonecznego (W/m2):"))
+        l2 = QtGui.QLabel(_fromUtf8("Szerokość (m):"))
+        l3 = QtGui.QLabel(_fromUtf8("Wysokość (m):"))
         nat = QtGui.QDoubleSpinBox()
         nat.setRange(0, 2000)
         nat.setValue(500)
