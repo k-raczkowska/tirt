@@ -8,7 +8,7 @@ except AttributeError:
         return s
 
 class abcd():
-    def __init__(s, mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, if_cool, if_heat, i, okna):
+    def __init__(s, mk, Tk, Tp, V, d, c, Qg, Np, k, hi, hl, To, Ai, Al, Tow, R, G, if_cool, if_heat, i, okna, TG):
         s.counter = 0
         s.mk = mk
         s.oknna = okna
@@ -33,21 +33,33 @@ class abcd():
         s.if_heat = if_heat
         s.i = i
         s.result = s.f(s.Tp, if_cool, if_heat)
+        s.TG = TG
 
     def suma(s, a, i):
         return a * i
 
     def f(s, y, if_cool, if_heat):
         Y = 0
+        if if_heat:
+            h = s.q_heat()
+            Y += 0.4 * s.q_heat()
+            if s.Tp + Y >= 0.4 * 80:
+                Y = 0.4 * 80 - s.Tp
+            if s.Tp >= 0.4 * 80:
+                Y = 0
         if if_cool:
+            c = s.q_cool(y)
             Y += s.q_cool(y)
             if s.Tk > s.Tp - Y:
                 Y = s.Tk - s.Tp
-        if if_heat:
-            Y += s.q_heat()
-            if s.Tp + Y >= 90:
-                Y = 90 - s.Tp
-        Y += s.q_wall(y) + s.q_int() + s.q_win(s.oknna)
+            if s.Tk * 1.1 >= s.Tp:
+                Y = 0
+            # if s.Tk * 1.1 <= s.Tp - Y:
+            #     Y = 0
+        if if_cool and s.Tk * 1.1 >= s.Tp:
+            Y = 0
+        else:
+            Y += s.q_wall(y) + s.q_int() + s.q_win(s.oknna)
         s.result = Y + s.Tp
         return Y
 
@@ -65,7 +77,7 @@ class abcd():
         s1 = s.suma(s.Ai / s.hi, s.i)
         s2 = s.suma(s.Al / s.hl, 4 - s.i)
         res = s.k * (s.To - y) / (s.V * s.d * s.c) * (s.suma(s.Ai / s.hi, s.i) + s.suma(s.Al / s.hl, 4 - s.i))
-        res2 = s.k / (s.V * s.d * s.c / 3600) * (s.suma(s.Ai * (s.Tow - s.Tp) / s.hi, s.i) + s.suma(s.Al * (s.To - s.Tp) / s.hl, 4 - s.i))
+        res2 = s.k / (s.V * s.d * s.c) * (s.suma(s.Ai * (s.Tow - s.Tp) / s.hi, s.i) + s.suma(s.Al * (s.To - s.Tp) / s.hl, 4 - s.i))
         return res2
 
     def q_win(s, x):  # okna
@@ -90,6 +102,7 @@ class abcd():
         k3 = h * s.f(s.Tp + 1 / 2 * k2 * h, if_cool, if_heat)
         k4 = h * s.f(s.Tp + k3 * h, if_cool, if_heat)
         dy = 1 / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
-        s.Tp += dy
+        # s.Tp += dy
+        res = s.Tp + dy
         s.counter += 1
-        return s.Tp
+        return res
