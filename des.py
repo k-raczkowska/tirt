@@ -30,13 +30,13 @@ class Window(QtGui.QWidget):
         self.lista_wys_okien = []
         grid = QtGui.QGridLayout()
         grid.addWidget(self.createFirstExclusiveGroup(), 0, 0)
-        grid.addWidget(self.createSecondExclusiveGroup(), 2, 1)
-        grid.addWidget(self.createNonExclusiveGroup(), 0, 1)
+        grid.addWidget(self.createSecondExclusiveGroup(), 0, 1)
+        grid.addWidget(self.createNonExclusiveGroup(), 0, 2)
         grid.addWidget(self.createPushButtonGroup(), 1, 0)
-        grid.addWidget(self.createSciany(), 2, 0)
         grid.addWidget(self.createOkna(), 1, 1)
-        grid.addWidget(self.create_persons(), 0, 2)
         grid.addWidget(self.temperatureControl(), 1, 2)
+        grid.addWidget(self.createSciany(), 2, 0)
+        grid.addWidget(self.create_persons(), 2, 1)
         grid.addWidget(self.solve(), 2, 2)
 
         # self.temperaturaG..connect(self.update)
@@ -46,7 +46,7 @@ class Window(QtGui.QWidget):
         self.setLayout(grid)
 
         self.setWindowTitle("Modelowanie temperatury pomieszczenia")
-        self.resize(640, 620)
+        #self.resize(640, 620)
 
 
 
@@ -263,10 +263,21 @@ class Window(QtGui.QWidget):
         # self.dodaj_o()
         dodaj_okno = QtGui.QPushButton("Dodaj okno")
 
-        self.vbox1.addWidget(dodaj_okno)
+
+        #self.vbox1.addWidget(dodaj_okno)
+        box2=QtGui.QHBoxLayout()
+
+        box2.addWidget(dodaj_okno)
+        box2.addStretch(1)
+
+
+        self.vbox1.addLayout(box2)
+        self.vbox1.addStretch(1)
+
 
         dodaj_okno.clicked.connect(self.dodaj_o)
         groupBox.setLayout(self.vbox1)
+
         return scrollArea
 
     def createLista(self):
@@ -317,7 +328,7 @@ class Window(QtGui.QWidget):
         l = QtGui.QLabel(_fromUtf8("Liczba osób"))
         self.liczba_osob = QtGui.QSpinBox()
 
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtGui.QFormLayout()
         vbox.addWidget(l)
         vbox.addWidget(self.liczba_osob)
         groupBox.setLayout(vbox)
@@ -326,10 +337,9 @@ class Window(QtGui.QWidget):
         return groupBox
 
     def solve(self):
+
         buttonSolve = QtGui.QPushButton(_fromUtf8("Rozwiąż równanie"))
         buttonSolve.clicked.connect(self.solveEquation)
-
-
 
         return buttonSolve
 
@@ -344,47 +354,60 @@ class Window(QtGui.QWidget):
 
         l2=QtGui.QLabel(_fromUtf8("Temperatura na noc"))
         self.temperatura_nocna=QtGui.QSpinBox()
+
         self.temperatura_nocna.setValue(18)
 
         l31=QtGui.QLabel(_fromUtf8("Od"))
-        l31.setAlignment(QtCore.Qt.AlignCenter)
+        #l31.setAlignment(QtCore.Qt.AlignCenter)
         self.czas_dzien_od=QtGui.QSpinBox()
         self.czas_dzien_od.setValue(5)
         l32=QtGui.QLabel(_fromUtf8("Do"))
-        l32.setAlignment(QtCore.Qt.AlignCenter)
+        #l32.setAlignment(QtCore.Qt.AlignCenter)
         self.czas_dzien_do=QtGui.QSpinBox()
         self.czas_dzien_do.setValue(18)
 
         l41=QtGui.QLabel(_fromUtf8("Od"))
-        l41.setAlignment(QtCore.Qt.AlignCenter)
+        #l41.setAlignment(QtCore.Qt.AlignCenter)
         self.czas_noc_od=QtGui.QSpinBox()
         self.czas_noc_od.setValue(18)
         l42=QtGui.QLabel(_fromUtf8("Do"))
-        l42.setAlignment(QtCore.Qt.AlignCenter)
+        #l42.setAlignment(QtCore.Qt.AlignCenter)
         self.czas_noc_do=QtGui.QSpinBox()
         self.czas_noc_do.setValue(5)
 
         layout=QtGui.QHBoxLayout()
         layout.addWidget(l)
+        layout.addStretch(1)
         layout.addWidget(self.temperatura_dzienna)
+        layout.addStretch(2)
 
         lay2=QtGui.QHBoxLayout()
         lay2.addWidget(l2)
+        lay2.addStretch(1)
         lay2.addWidget(self.temperatura_nocna)
+        lay2.addStretch(2)
 
         lay3=QtGui.QHBoxLayout()
         lay3.addWidget(l31)
+        lay3.addStretch(1)
         lay3.addWidget(self.czas_dzien_od)
+        lay3.addStretch(1)
         lay3.addWidget(l32)
+        lay3.addStretch(1)
         lay3.addWidget(self.czas_dzien_do)
+        lay3.addStretch(10)
 
         lay4=QtGui.QHBoxLayout()
         lay4.addWidget(l41)
+        lay4.addStretch(1)
         lay4.addWidget(self.czas_noc_od)
+        lay4.addStretch(1)
         lay4.addWidget(l42)
+        lay4.addStretch(1)
         lay4.addWidget(self.czas_noc_do)
+        lay4.addStretch(10)
 
-        laySuma=QtGui.QVBoxLayout()
+        laySuma=QtGui.QFormLayout()
         laySuma.addItem(layout)
         laySuma.addItem(lay3)
         laySuma.addItem(lay2)
@@ -485,11 +508,11 @@ class Window(QtGui.QWidget):
             else:
                 state="wylaczony"
 
-            self.u.text.append("\nZmiana: Grzejnik został "+state)
+            self.u.text.append("Zmiana: Grzejnik został "+state)
         if (widgetChanged == self.temp_pow):
             widgetChanged.setValue(value)
             self.solver.Tk=value
-            self.u.text.append("\nZmiana: temperatury klimatyzacji na wartość: "+str(value))
+            self.u.text.append("Zmiana: temperatury klimatyzacji na wartość: "+str(value))
 
         if (widgetChanged==self.klimatyzacja): #wlaczony/wylaczony grzejnik
             widgetChanged.setChecked(value)
@@ -501,7 +524,7 @@ class Window(QtGui.QWidget):
             else:
                 state="wylaczona"
 
-            self.u.text.append("\nZmiana: Klimatyzacja została "+state)
+            self.u.text.append("Zmiana: Klimatyzacja została "+state)
 
         #print(widgetChanged)
     def setMin(self,value):
@@ -511,13 +534,18 @@ class Window(QtGui.QWidget):
         self.temp_pow.setMaximum(value)
 
     def temp_cool(self, temp_z, temp_a, diff):
-        t = self.t_cool(temp_z, temp_a, diff)
-        self.u.text.append("\nZmiana: temperatury klimatyzacji na wartość: "+str(t))
+
+        t = self.t_cool(temp_z, temp_a, diff) #zmniejsza temperaturę temp_z do wartości przy której różnica temp_z a aktualna
+                                              #jest < ciepło które pobrała by klimatyzacja przy temperaturze temp_z
+        if (self.solver.Tk != t):
+            self.solver.Tk = t #ustawiamy solver.tk jako temperaturę zadaną
+            self.u.text.append("Zmiana: klimatyzacja ustawiona na temperaturę: "+str(t))
+
         return t
 
-    def t_cool(self, temp_z, temp_a, diff):
-        self.solver.Tk = temp_z
-        res = self.solver.mk * (temp_z - temp_a) / (self.solver.V * self.solver.d)
+    def t_cool(self, temp_z, temp_a, diff): #zadana, aktualna, różnica zadana -zaktualna
+
+        res = self.solver.mk * (temp_z - temp_a) / (self.solver.V * self.solver.d) #ilość ciepła odbieranego przez klimę
         if diff < res:
             if temp_z != self.klimTempMin.value():
                 return self.t_cool(temp_z - 1, temp_a, diff)

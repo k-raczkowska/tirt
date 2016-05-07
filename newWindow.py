@@ -40,14 +40,16 @@ class newWind(QtGui.QDialog):
 
     def doSolving(self):
         x = self.solver.solve(self.solver.if_cool, self.solver.if_heat)
-        self.text.append("\nGodzina " +str(self.time)+":  "+ str(round(x, 2)))
+        self.text.append("--------------------------------------------------------------------------"
+                         "\nGodzina " +str(self.time)+":  "+ str(round(self.solver.result, 2)))
 
         # self.solver.Tp = self.solver.result
         if (self.sterowanie==True):
             temperatura=self.sprawdzKtoraTemperaturaObecnie()
-            self.text.append("teraz temperatura: "+str(temperatura))
+            self.text.append("Temeratura pożądana: "+str(temperatura)+"\n")
             self.classSterowanie.podejmijDecyzje(self.solver.Tp, temperatura)
         self.time=(self.time+1)%24
+        print(str(self.solver.Tp)+" // "+str(self.solver.result))
         self.solver.Tp = self.solver.result
 
     def stop(self):

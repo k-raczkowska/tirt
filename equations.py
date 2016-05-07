@@ -85,9 +85,9 @@ class abcd():
         for okno in s.oknna:
             licznik_ulamka += 0.5 * okno.wysokosc.value() * okno.szerokosc.value() * okno.strona.value()
             wsp = okno.strona.value()
-            print okno.strona.value()
-            print okno.wysokosc.value()
-            print okno.szerokosc.value()
+            # print okno.strona.value()
+            # print okno.wysokosc.value()
+            # print okno.szerokosc.value()
             s.G = 0.5
             s.Ai = okno.wysokosc.value() * okno.szerokosc.value()
         return licznik_ulamka / (s.V * s.d * s.c)
@@ -95,6 +95,7 @@ class abcd():
     # rungego kutty 4 rzędu
     def solve(s, if_cool, if_heat):  # początkowe wartości x i y
         h = 0.01
+        print("temp wej :"+str(s.Tp)+" heater "+str(if_heat)+" cooler "+str(if_cool))
 
         k1 = h * s.f(s.Tp, if_cool, if_heat)
         x = s.Tp + 1 / 2 * k1 * h
@@ -103,6 +104,8 @@ class abcd():
         k4 = h * s.f(s.Tp + k3 * h, if_cool, if_heat)
         dy = 1 / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
         # s.Tp += dy
+
         res = s.Tp + dy
+        print("temp wyj :"+str(res))
         s.counter += 1
         return res

@@ -15,17 +15,21 @@ class sterowanie():
         self.temperatury.append(temp_aktualna)
         print(self.temperatury)
         if temp_aktualna < temp_zadana:
-            if not self.solver.if_heat:
+            if not self.solver.if_heat and not self.solver.if_cool:
                 self.window.grzejnik.setChecked(True)
                 self.window.update(self.window.grzejnik, True)
+                self.solver.if_heat=True
 
             if self.solver.if_cool:
                 self.window.klimatyzacja.setChecked(False)
                 self.window.update(self.window.klimatyzacja, False)
+                self.solver.if_cool=False
 
         if temp_aktualna > temp_zadana:
             roznica = temp_zadana - temp_aktualna
-            self.window.update(self.window.klimatyzacja, True)
+            if not self.solver.if_cool:
+                self.window.update(self.window.klimatyzacja, True)
+
             x = self.window.temp_cool(temp_zadana, temp_aktualna, roznica)
             if len(self.temperatury) > 1 and self.temperatury[-1] > temp_zadana and temp_zadana < self.temperatury[-2] < \
                             self.temperatury[-1] + self.roznica:
@@ -34,6 +38,8 @@ class sterowanie():
                 #     self.window.update(self.window.temp_pow, self.window.temp_pow.value() - 1)
                 if not self.solver.if_cool:
                     self.window.update(self.window.klimatyzacja, True)
+
                 if self.solver.if_heat:
                     self.window.update(self.window.grzejnik, False)
+
             print("cooling", x)
